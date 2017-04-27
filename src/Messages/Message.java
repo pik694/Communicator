@@ -1,6 +1,4 @@
-package Server.Messages;
-
-import Server.Server;
+package Messages;
 
 import java.io.Serializable;
 
@@ -38,9 +36,9 @@ public class Message implements Serializable{
      * Accepts visitor which dispatches the message.
      * @param dispatcher object that is responsible for invoking the appropriate dispatching method
      */
-//    public void acceptADispatcher(Server.Server.Dispatcher dispatcher){
-//        dispatcher.dispatch(this);
-//    }
+    public void acceptADispatcher(Server.Server.Dispatcher dispatcher) throws InterruptedException{
+        dispatcher.dispatch(this);
+    }
 
     /**
      * Attribute that specifies who sent the message.

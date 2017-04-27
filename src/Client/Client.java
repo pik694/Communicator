@@ -1,12 +1,13 @@
 package Client;
 
 
-import Server.Messages.*;
-import Server.Messages.Message;
-import com.sun.corba.se.impl.protocol.giopmsgheaders.*;
+import Messages.Message;
+import Messages.MessagesQueue;
+import Messages.Signal;
+import Messages.SignalType;
+import Server.Server;
 
 import java.io.*;
-import java.lang.String;
 import java.net.Socket;
 
 /**
@@ -21,7 +22,6 @@ public class Client {
 
         try (
                 Socket socket = new Socket("localhost", port);
-                //PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
                 BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
                 ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 )
@@ -29,10 +29,14 @@ public class Client {
             Thread inputThread =  new Thread (new InputThread(socket));
             inputThread.start();
 
+            String name = stdIn.readLine();
+            outputStream.writeObject(new Signal(name, Server.instance.name, SignalType.clientID, name));
+
+
             while (true){
 
                 String text = stdIn.readLine();
-                outputStream.writeObject(new Message("__client1__", "__server__", text));
+                outputStream.writeObject(new Message(name, Server.instance.name, text));
                 if (text.equals("exit")) break;
             }
 
@@ -62,7 +66,6 @@ public class Client {
                      ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                             )
             {
-
                 while (true){
 
                     Message message = Message.class.cast(in.readObject());

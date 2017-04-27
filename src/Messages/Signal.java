@@ -1,11 +1,9 @@
-package Server.Messages;
-
-import Server.Server;
+package Messages;
 
 /**
  * Created by piotr on 13.04.2017.
  */
-public class Signal extends Message{
+public class Signal extends Message {
     /**
      * Signal constructor with additional message attached to the signal.
      *
@@ -41,9 +39,14 @@ public class Signal extends Message{
      * Accepts visitor which dispatches the signal.
      * @param dispatcher object that is responsible for invoking the appropriate dispatching method
      */
-//    public void acceptADispatcher(Server.Server.Dispatcher dispatcher){
-//        dispatcher.dispatch(this);
-//    }
+    public void acceptADispatcher(Server.Server.Dispatcher dispatcher){
+        dispatcher.dispatch(this);
+    }
+
+
+    public String toString(){
+        return super.toString() +  " " + signalType + " " +  object;
+    }
 
     /**
      * Attribute that specifies type of the signal.
