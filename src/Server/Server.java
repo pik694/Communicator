@@ -4,12 +4,13 @@ package Server;
 import Messages.Message;
 import Messages.MessagesQueue;
 import Messages.Signal;
+import Messages.SignalType;
 import Server.Client.Client;
 import Server.Deamons.ConnectionEstablisher;
 import Server.Interfaces.Receiver;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.IOException;
+
 import java.security.InvalidParameterException;
 import java.util.Vector;
 
@@ -23,7 +24,6 @@ public class Server implements Receiver{
 
         instance.init();
         instance.run();
-        instance.close();
 
     }
 
@@ -55,6 +55,7 @@ public class Server implements Receiver{
 
                 Message message = messages.getMessage();
 
+                //TODO: remove printing messages
                 System.out.println(message.toString());
 
                 message.acceptADispatcher(dispatcher);
@@ -74,7 +75,7 @@ public class Server implements Receiver{
         try{
             connectionEstablisher.join();
             for (Client client : clients){
-                client.close();
+                client.closeClient();
             }
         }
         catch (Exception e){
@@ -82,6 +83,8 @@ public class Server implements Receiver{
             System.err.println(e);
             System.exit(1);
         }
+
+        System.out.println("Server will exit");
 
     }
 
@@ -94,42 +97,48 @@ public class Server implements Receiver{
          */
         public void dispatch(Signal signal){
             switch (signal.signalType){
-                case clientConnected:
+                case CLIENT_CONNECTED:
                     try {
-                        Client client = Client.class.cast(signal.object);
-                        instance.clients.addElement(client);
+                        Client newClient = Client.class.cast(signal.object);
 
-                        client.start();
-                    }
-                    catch (ClassCastException e){
-                        System.err.println("invalid client given");
-                    }
-                    break;
+                        for (Client client : clients){
+                            client.send(new Signal(name, client.getClientID(), SignalType.ADD_CLIENT, newClient.getClientID()));
+                            newClient.send(new Signal(name, newClient.getClientID(), SignalType.ADD_CLIENT, client.getClientID()));
+                        }
+                        clients.addElement(newClient);
 
-                case clientConnectionError:
-                case connectionWithClientClosed:
-                    try {
-                        Client client = Client.class.cast(signal.object);
-                        instance.clients.remove(client);
-                        client.close();
+                        newClient.start();
                     }
-                    //TODO: EXCEPTIONS
                     catch (ClassCastException e){
                         System.err.println("invalid client given");
                     }
                     catch (InterruptedException e){
-                        System.err.println(e.getMessage());
-                        throw new NotImplementedException();
-                    }
-                    catch (IOException e){
-                        System.err.println(e.getMessage());
-                        throw new NotImplementedException();
+                        System.err.println("Unexpected exception:" + e);
+                        System.exit(2);
                     }
                     break;
-                case closeServer:
-                    Thread.currentThread().interrupt();
+                case CLIENT_THREADS_FINISHED:
+                    clients.remove(signal.object);
+
+
+                    try {
+                        for (Client client : clients) {
+                            client.send(new Signal(name, client.getClientID(), SignalType.REMOVE_CLIENT, signal.sender));
+                        }
+                    }
+                    catch (InterruptedException e){
+                        System.err.println("Unexpected exception:" + e);
+                        System.exit(3);
+                    }
+
+                    break;
+                case ESTABLISHER_THREAD_FINISHED:
+                case CLOSE_SERVER:
+                    close();
+                    System.exit(0);
                     break;
                 default:
+                    System.err.println(signal.signalType);
                     throw new NotImplementedException();
                     //TODO
                     // break;
@@ -148,8 +157,6 @@ public class Server implements Receiver{
 
             //TODO: message dispatcher
             if (message.receiver.equals(name)){
-
-                if (message.message.equals("exit")) Thread.currentThread().interrupt();
 
                 System.out.println(message.message);
                 return;

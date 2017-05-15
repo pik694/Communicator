@@ -30,28 +30,23 @@ public class Client {
             inputThread.start();
 
             String name = stdIn.readLine();
-            outputStream.writeObject(new Signal(name, Server.instance.name, SignalType.clientID, name));
+            outputStream.writeObject(new Signal(name, Server.instance.name, SignalType.CLIENT_ID, name));
 
 
             while (true){
 
                 String text = stdIn.readLine();
                 outputStream.writeObject(new Message(name, Server.instance.name, text));
-                if (text.equals("exit")) break;
+                if (text.equals("exit")) System.exit(0);
             }
 
-            inputThread.interrupt();
-            inputThread.join();
 
         }
         catch (IOException e){
             System.err.println(e);
             System.exit(1);
         }
-        catch (InterruptedException e){
-            System.err.println(e);
-            System.exit(1);
-        }
+
     }
 
 

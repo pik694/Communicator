@@ -16,15 +16,11 @@ public class MessagesQueue  {
      */
     public synchronized void addMessage(Message message) throws InterruptedException{
 
-        if (queue.size() == MAX_QUEUE_SIZE){
-            wait();
-        }
-        queue.add(message);
-        notify();
+        while (queue.size() == MAX_QUEUE_SIZE) wait();
 
-//        synchronized (lock){
-//            lock.notify();
-//        }
+        queue.add(message);
+
+        notify();
 
 
     }
@@ -38,26 +34,15 @@ public class MessagesQueue  {
     public synchronized Message getMessage() throws InterruptedException {
 
 
-        if (queue.isEmpty()) wait();
+        while (isEmpty()) wait();
 
-            Message message = queue.firstElement();
-            queue.remove(message);
-            notify();
+        Message message = queue.firstElement();
+        queue.remove(message);
 
-            return message;
+        notify();
 
-//        if (queue.isEmpty()){
-//            synchronized (lock){
-//                lock.wait();
-//            }
-//        }
-//
-//        synchronized (this){
-//            Message message = queue.firstElement();
-//            queue.remove(message);
-//
-//            return message;
-//        }
+        return message;
+
     }
 
     public synchronized boolean isEmpty(){
@@ -65,8 +50,7 @@ public class MessagesQueue  {
     }
 
 
-    static final int MAX_QUEUE_SIZE = 1;
+    static final int MAX_QUEUE_SIZE = 1024;
     private Vector<Message> queue = new Vector<>(MAX_QUEUE_SIZE);
 
-    private Object lock = new Object();
 }

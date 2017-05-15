@@ -8,6 +8,7 @@ import Messages.SignalType;
 import Server.Interfaces.Receiver;
 import Server.Server;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import sun.rmi.rmic.iiop.Generator;
 
 import java.io.*;
 import java.net.Socket;
@@ -43,19 +44,33 @@ public class Client implements Receiver {
         out.start();
     }
 
-    public void close() throws InterruptedException, IOException{
-
-        //TODO: handle exceptions
-        //TODO: make sure that it works and does not block
-
-        in.interrupt();
-        out.interrupt();
-
+    public void closeClient () throws IOException, InterruptedException{
+        socket.close();
         in.join();
         out.join();
+    }
 
-        socket.close();
+    private synchronized void close(){
 
+        try {
+
+            Thread oppositeThread = Thread.currentThread() == in ? out : in;
+
+            oppositeThread.interrupt();
+
+            socket.close();
+            inputStream.close();
+            outputStream.close();
+
+            oppositeThread.join();
+
+            Server.instance.send(new Signal(clientID, Server.instance.name, SignalType.CLIENT_THREADS_FINISHED, this));
+
+        }
+        catch (Exception e){
+            System.err.println("Unexpected exception : " + e);
+            System.exit(1);
+        }
 
     }
 
@@ -78,26 +93,28 @@ public class Client implements Receiver {
                     Message message = Message.class.cast(inputStream.readObject());
                     Server.instance.send(message);
 
-                    if (Thread.interrupted()) break;
                 }
-                close();
-            }
-            catch (Exception e){
-                e.printStackTrace();
-                System.err.println(e);
-                System.exit(1);
             }
 
-        }
-        private void close() throws IOException, InterruptedException{
-            Server.instance.send(new Signal(clientID, Server.instance.name, SignalType.threadFinished));
+            catch (Exception e){
+                boolean shallIClose = false;
+
+                synchronized (mutex){
+                    if (!exiting) {
+                        shallIClose = true;
+                        exiting = true;
+                    }
+                }
+
+                if (shallIClose){
+                    close();
+                }
+            }
+
         }
 
     }
     private class OutClient implements Runnable{
-
-        public OutClient (){
-        }
 
 
         public void run(){
@@ -109,15 +126,23 @@ public class Client implements Receiver {
                     outputStream.writeObject(message);
                 }
             }
-            catch (IOException e){
-                //TODO: handle IOException and try to catch InterruptedException
-                System.err.println(e.getMessage());
-                throw new NotImplementedException();
-            }
-            catch (InterruptedException e){
-                //TODO: handle IOException and try to catch InterruptedException
-                System.err.println(e.getMessage());
-                throw new NotImplementedException();
+
+            catch (Exception e){
+
+                boolean shallIClose = false;
+
+                synchronized (mutex){
+                    if (!exiting) {
+                        shallIClose = true;
+                        exiting = true;
+                    }
+                }
+
+                if (shallIClose){
+                    close();
+                }
+
+
             }
 
         }
@@ -132,4 +157,7 @@ public class Client implements Receiver {
     private final InClient inClient;
     private final Thread in;
     private final Thread out;
+
+    private boolean exiting = false;
+    private Object mutex = new Object();
 }

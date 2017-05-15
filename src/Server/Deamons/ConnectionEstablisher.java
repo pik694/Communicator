@@ -32,7 +32,7 @@ public class ConnectionEstablisher implements Runnable{
 
                 try{
                     Client client = establishConnection(serverSocket);
-                    Server.instance.send(new Signal(name, Server.instance.name, SignalType.clientConnected, client));
+                    Server.instance.send(new Signal(name, Server.instance.name, SignalType.CLIENT_CONNECTED, client));
                 }
                 catch (IOException e){
                     if (thread.isInterrupted()){
@@ -45,7 +45,7 @@ public class ConnectionEstablisher implements Runnable{
         }
         catch (Exception e){
             try{
-                Server.instance.send(new Signal(name, Server.instance.name, SignalType.threadFinished));
+                Server.instance.send(new Signal(name, Server.instance.name, SignalType.ESTABLISHER_THREAD_FINISHED));
             }
             catch (InterruptedException exception){
                 System.err.println("Unable to exit properly. Program will exit.");
@@ -80,17 +80,17 @@ public class ConnectionEstablisher implements Runnable{
                 Signal signal;
                 try {
                     signal = (Signal) inputStream.readObject();
-                    if (signal.signalType == SignalType.clientID){
+                    if (signal.signalType == SignalType.CLIENT_ID){
                         if (Server.instance.validateClientID(signal.message)){
-                            outputStream.writeObject(new Signal(Server.instance.name, signal.message, SignalType.clientIDAccepted));
+                            outputStream.writeObject(new Signal(Server.instance.name, signal.message, SignalType.CLIENT_ID_ACCEPTED));
                             return  new Client(signal.message, socket, inputStream, outputStream);
                         }
                     }
-                    outputStream.writeObject(new Signal(Server.instance.name, "noID", SignalType.clientIDRejected));
+                    outputStream.writeObject(new Signal(Server.instance.name, "noID", SignalType.CLIENT_ID_REJECTED));
                 }
 
                 catch (ClassNotFoundException e){
-                    outputStream.writeObject(new Signal(Server.instance.name, "noID", SignalType.clientIDRejected));
+                    outputStream.writeObject(new Signal(Server.instance.name, "noID", SignalType.CLIENT_ID_REJECTED));
                 }
 
             }

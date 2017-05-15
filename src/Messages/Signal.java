@@ -1,5 +1,7 @@
 package Messages;
 
+import Server.Server;
+
 /**
  * Created by piotr on 13.04.2017.
  */
@@ -34,12 +36,20 @@ public class Signal extends Message {
         object = null;
 
     }
+//TODO : Doc
+    public Signal (String sender, SignalType signal){
+
+        super(sender,Server.instance.name, null);
+        signalType = signal;
+        object = null;
+
+    }
 
     /**
      * Accepts visitor which dispatches the signal.
      * @param dispatcher object that is responsible for invoking the appropriate dispatching method
      */
-    public void acceptADispatcher(Server.Server.Dispatcher dispatcher){
+    public void acceptADispatcher(Server.Dispatcher dispatcher){
         dispatcher.dispatch(this);
     }
 
