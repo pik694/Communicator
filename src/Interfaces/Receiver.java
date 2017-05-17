@@ -1,4 +1,4 @@
-package Server.Interfaces;
+package Interfaces;
 
 import Messages.Message;
 

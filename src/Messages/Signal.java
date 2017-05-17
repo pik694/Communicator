@@ -1,6 +1,7 @@
 package Messages;
 
 import Server.Server;
+import Interfaces.Dispatcher;
 
 /**
  * Created by piotr on 13.04.2017.
@@ -49,7 +50,7 @@ public class Signal extends Message {
      * Accepts visitor which dispatches the signal.
      * @param dispatcher object that is responsible for invoking the appropriate dispatching method
      */
-    public void acceptADispatcher(Server.Dispatcher dispatcher){
+    public void acceptADispatcher(Dispatcher dispatcher){
         dispatcher.dispatch(this);
     }
 

@@ -7,7 +7,8 @@ import Messages.Signal;
 import Messages.SignalType;
 import Server.Client.Client;
 import Server.Deamons.ConnectionEstablisher;
-import Server.Interfaces.Receiver;
+import Interfaces.Receiver;
+import Interfaces.Dispatcher;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 
@@ -48,7 +49,7 @@ public class Server implements Receiver{
 
     private void run (){
 
-        Dispatcher dispatcher = new Dispatcher();
+        MessagesDispatcher dispatcher = new MessagesDispatcher();
 
         while (true){
             try {
@@ -60,10 +61,12 @@ public class Server implements Receiver{
 
                 message.acceptADispatcher(dispatcher);
 
+                //TODO: is it necessary ?
                if (Thread.interrupted()) break;
+
             }
             catch (InterruptedException e){
-
+                //TODO
             }
         }
     }
@@ -89,7 +92,7 @@ public class Server implements Receiver{
     }
 
 
-    public class Dispatcher{
+    public class MessagesDispatcher implements Dispatcher {
 
         /**
          * This method dispatches a signal.
@@ -153,23 +156,29 @@ public class Server implements Receiver{
          * @param message a message to be dispatched.
          * @throws InvalidParameterException when such a client does not exist.
          */
-        public void dispatch(Message message) throws InvalidParameterException, InterruptedException  {
+        public void dispatch(Message message){
 
             //TODO: message dispatcher
-            if (message.receiver.equals(name)){
+            try {
 
-                System.out.println(message.message);
-                return;
-            }
+                if (message.receiver.equals(name)) {
 
-            for (Client client : instance.clients) {
-                if (message.receiver.equals(client.getClientID())){
-                    client.send(message);
+                    System.out.println(message.message);
                     return;
                 }
-            }
 
-            throw new InvalidParameterException("Such a client does not exist");
+                for (Client client : instance.clients) {
+                    if (message.receiver.equals(client.getClientID())) {
+                        client.send(message);
+                        return;
+                    }
+                }
+
+                throw new InvalidParameterException("Such a client does not exist");
+            }
+            catch (Exception e){
+                //TODO
+            }
         }
     }
 
