@@ -38,7 +38,6 @@ public class ConnectionEstablisher implements Runnable{
                     if (thread.isInterrupted()){
                         throw e;
                     }
-
                 }
             }
 

@@ -1,13 +1,16 @@
 package Client;
 
 
+import Client.Model.Model;
 import Messages.Message;
 import Messages.MessagesQueue;
 import Messages.Signal;
 import Messages.SignalType;
 import Server.Server;
 
+import javax.jnlp.DownloadService;
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 
 /**
@@ -17,32 +20,38 @@ public class Client {
 
     public static void main(String [] args){
 
-
-        Integer port = ((args.length != 0) ? Integer.parseInt(args[0]) : 65256);
-
         try (
-                Socket socket = new Socket("localhost", port);
                 BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-                ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
                 )
         {
-            Thread inputThread =  new Thread (new InputThread(socket));
-            inputThread.start();
 
-            String name = stdIn.readLine();
-            outputStream.writeObject(new Signal(name, Server.instance.name, SignalType.CLIENT_ID, name));
+            Model.instance.setServer("localhost", 65256);
 
+            String name;
+
+
+            do{
+                name = stdIn.readLine();
+            } while (Model.instance.setClientId(name) == false);
+
+            String another = stdIn.readLine();
 
             while (true){
 
-                String text = stdIn.readLine();
-                outputStream.writeObject(new Message(name, Server.instance.name, text));
-                if (text.equals("exit")) System.exit(0);
+                String  text = stdIn.readLine();
+
+                Model.instance.send(new Message(name, another, text));
+
+
+                if (text.equals("exit")) {
+                    Model.instance.disconnect();
+                    System.exit(0);
+                }
             }
 
 
         }
-        catch (IOException e){
+        catch (Exception e){
             System.err.println(e);
             System.exit(1);
         }
@@ -50,42 +59,6 @@ public class Client {
     }
 
 
-    static class InputThread implements Runnable {
-        public InputThread(Socket socket){
-            this.socket = socket;
-        }
 
-        public void run(){
-
-            try (
-                     ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                            )
-            {
-                while (true){
-
-                    Message message = Message.class.cast(in.readObject());
-                    System.out.println(message.toString());
-                    if (Thread.interrupted()) break;
-                }
-
-
-
-            }
-            catch(Exception e){
-                System.err.println(e);
-                System.exit(1);
-            }
-
-            System.err.println("Exited");
-
-        }
-
-        private Socket socket;
-    }
-
-
-
-    private static Client instance = new Client();
-    private MessagesQueue messages = new MessagesQueue();
 
 }

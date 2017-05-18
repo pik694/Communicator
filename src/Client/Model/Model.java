@@ -1,6 +1,7 @@
 package Client.Model;
 
 
+import Client.Controller.MainController;
 import Interfaces.Receiver;
 import Interfaces.Dispatcher;
 import Messages.Message;
@@ -27,7 +28,7 @@ public final class Model implements Receiver {
         messagesQueue_.addMessage(message);
     }
 
-    public boolean setServer (InetAddress address, int port){
+    public boolean setServer (String address, int port){
 
         Socket temporarySocket;
 
@@ -56,7 +57,7 @@ public final class Model implements Receiver {
 
     public boolean setClientId (String clientID){
 
-        if (socket_ != null || clientID_ != null){
+        if (socket_ != null && clientID_ != null){
             throw new UnsupportedOperationException("Could not change clientID while connected to a server:\n"
                     + "Socket: " + socket_.toString()
                     + "\nclientID: " + clientID_);
@@ -103,6 +104,33 @@ public final class Model implements Receiver {
     }
 
 
+    public void disconnect(){
+
+        purposeDisconnection_ = true;
+
+        try {
+
+            inputThread_.interrupt();
+            outputThread_.interrupt();
+
+            socket_.close();
+
+            outputThread_.join();
+            inputThread_.join();
+
+            socket_ = null;
+            inputStream_ = null;
+            outputStream_ = null;
+
+        }
+        catch (Exception e){
+            System.err.println(e);
+            throw new NotImplementedException();
+        }
+
+        purposeDisconnection_ = false;
+    }
+
     public static Model instance = new Model();
 
 
@@ -122,17 +150,34 @@ public final class Model implements Receiver {
                 }
             }
             catch (Exception e){
-                if (purposeDisconnection_);
-                throw  new NotImplementedException();
+                if (!purposeDisconnection_){
+                    System.err.println("Unexpected exception: " + e);
+                    System.exit(1);
+                }
             }
         }
 
         private class MessageDispatcher implements Dispatcher {
             public void dispatch(Message message){
-                throw new NotImplementedException();
+                try {
+                    MainController.instance.send(message);
+                }
+                catch (InterruptedException e){
+                    throw new NotImplementedException();
+                }
+
             }
             public void dispatch(Signal signal){
-                throw new NotImplementedException();
+                switch (signal.signalType){
+                    case ADD_CLIENT:
+                        otherClients_.add(String.class.cast(signal.object));
+                        break;
+                    case REMOVE_CLIENT:
+                        otherClients_.remove(signal.object);
+                        break;
+                    default:
+                        throw new NotImplementedException();
+                }
             }
         }
 
@@ -147,46 +192,17 @@ public final class Model implements Receiver {
                 }
             }
             catch (Exception e){
-
-                if (purposeDisconnection_);
-
-                throw new NotImplementedException();
+                if (!purposeDisconnection_){
+                    System.err.println("Unexpected exception: " + e);
+                    System.exit(1);
+                }
             }
 
         }
     }
 
-
-    private void disconnect(){
-       purposeDisconnection_ = true;
-
-       try {
-
-           inputThread_.interrupt();
-           outputThread_.interrupt();
-
-           socket_.close();
-           inputStream_.close();
-           outputStream_.close();
-
-           outputThread_.join();
-           inputThread_.join();
-
-           socket_ = null;
-           inputStream_ = null;
-           outputStream_ = null;
-
-       }
-       catch (Exception e){
-           throw new NotImplementedException();
-       }
-
-       purposeDisconnection_ = false;
-    }
-
-
-    private final Thread inputThread_ = new Thread(new InputThread());
-    private final Thread outputThread_ = new Thread(new OutputThread());
+    private final Thread inputThread_ = new Thread(new InputThread(), "inputThread");
+    private final Thread outputThread_ = new Thread(new OutputThread(), "outputThread");
     private final MessagesQueue messagesQueue_ =  new MessagesQueue();
     private final Vector<String> otherClients_ = new Vector<>();
 

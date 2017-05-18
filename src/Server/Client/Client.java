@@ -24,8 +24,8 @@ public class Client implements Receiver {
 
         this.clientID = clientID;
         this.socket = socket;
-        this.outputStream = outputStream;
-        this.inputStream = inputStream;
+        this.outputStream_ = outputStream;
+        this.inputStream_ = inputStream;
 
         this.inClient = new InClient();
         this.outClient = new OutClient();
@@ -57,8 +57,8 @@ public class Client implements Receiver {
             oppositeThread.interrupt();
 
             socket.close();
-            inputStream.close();
-            outputStream.close();
+            inputStream_.close();
+            outputStream_.close();
 
             oppositeThread.join();
 
@@ -88,7 +88,7 @@ public class Client implements Receiver {
             try{
                 while (true) {
 
-                    Message message = Message.class.cast(inputStream.readObject());
+                    Message message = Message.class.cast(inputStream_.readObject());
                     Server.instance.send(message);
 
                 }
@@ -121,7 +121,7 @@ public class Client implements Receiver {
             {
                 while (true){
                     Message message = messages.getMessage();
-                    outputStream.writeObject(message);
+                    outputStream_.writeObject(message);
                 }
             }
 
@@ -147,8 +147,8 @@ public class Client implements Receiver {
         public MessagesQueue messages = new MessagesQueue();
     }
 
-    private final ObjectInputStream inputStream;
-    private final ObjectOutputStream outputStream;
+    private final ObjectInputStream inputStream_;
+    private final ObjectOutputStream outputStream_;
     private final Socket socket;
     private final String clientID;
     private final OutClient outClient;
