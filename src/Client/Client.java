@@ -3,15 +3,10 @@ package Client;
 
 import Client.Model.Model;
 import Messages.Message;
-import Messages.MessagesQueue;
-import Messages.Signal;
-import Messages.SignalType;
-import Server.Server;
 
-import javax.jnlp.DownloadService;
-import java.io.*;
-import java.net.InetAddress;
-import java.net.Socket;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+
 
 /**
  * Created by piotr on 27.04.2017.
