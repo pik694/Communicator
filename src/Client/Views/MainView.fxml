@@ -6,6 +6,7 @@
 
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.Tab?>
+
 <GridPane xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10" fx:controller="Client.Controllers.MainController">
 
 
@@ -15,19 +16,12 @@
     <ButtonBar GridPane.halignment="LEFT" GridPane.rowSpan="1">
         <buttons>
             <Button text="add" onAction="#newItemButtonClicked" />
-            <Button text="remove" onAction="#removeItemButtonClicked" />
+            <Button text="remove" onAction="#removeItemButtonClicked"/>
         </buttons>
     </ButtonBar>
 
     <ListView fx:id="otherClientsListView" GridPane.rowIndex="1" GridPane.fillWidth="true" onMouseClicked="#selectedUser"/>
 
-    <TabPane fx:id="usersTabs" GridPane.fillWidth="true" GridPane.rowIndex="2">
-
-        <tabs>
-            <Tab />
-        </tabs>
-
-    </TabPane>
 
 
 </GridPane>
