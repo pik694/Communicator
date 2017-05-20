@@ -9,11 +9,6 @@ import java.util.Vector;
 public class MessagesQueue  {
 
 
-    /**
-     * Adds message to the collection.
-     *
-     * @param message is a message or signal that will be added to the queue.
-     */
     public synchronized void addMessage(Message message) throws InterruptedException{
 
         while (queue.size() == MAX_QUEUE_SIZE) wait();
@@ -24,13 +19,6 @@ public class MessagesQueue  {
 
 
     }
-
-    /**
-     * Returns a valid message and removes it from the collection.
-     *
-     * @return returns a valid message
-    //TODO: fix documentation * @throws NullPointerException throws exception in case there is not any message to be read
-     */
     public synchronized Message getMessage() throws InterruptedException {
 
 

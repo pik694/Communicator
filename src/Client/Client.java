@@ -1,18 +1,14 @@
 package Client;
 
-import Client.Controller.MainController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 
 import Client.Model.Model;
-import Messages.Message;
-
-
 
 
 /**
@@ -61,8 +57,8 @@ public class Client extends Application {
 //        }
 
 
-        Model.instance.setServer("localhost", 65256);
-        Model.instance.setClientId("mysz");
+        //Model.instance.setServer("localhost", 65256);
+        //Model.instance.setClientId("żaba");
 
         launch(args);
 
@@ -74,7 +70,7 @@ public class Client extends Application {
 
         primaryStage.setTitle("Communicator - Client Side");
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("MainView.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Views/MainView.fxml"));
 
         //fxmlLoader.setController(MainController.instance);
 
@@ -82,6 +78,19 @@ public class Client extends Application {
 
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
+
+
+        Stage serverStage = new Stage();
+        serverStage.setTitle("Select the server");
+
+        Parent options = FXMLLoader.load(getClass().getResource("Views/OptionsForm.fxml"));
+
+        serverStage.setScene(new Scene(options));
+
+        serverStage.initOwner(primaryStage);
+        serverStage.initModality(Modality.WINDOW_MODAL);
+
+        serverStage.showAndWait();
 
 
     }

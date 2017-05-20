@@ -56,7 +56,6 @@ public class Server implements Receiver{
 
                 Message message = messages.getMessage();
 
-                //TODO: remove printing messages
                 System.out.println(message.toString());
 
                 message.acceptDispatcher(dispatcher);
@@ -64,7 +63,8 @@ public class Server implements Receiver{
 
             }
             catch (InterruptedException e){
-                //TODO
+                System.err.println("Unexpected exception:" + e);
+                System.exit(1);
             }
         }
     }
@@ -92,16 +92,25 @@ public class Server implements Receiver{
 
     public class MessagesDispatcher implements Dispatcher {
 
-        //TODO: Handle unneeded signals
-        public void dispatch(NewClientSignal signal){}
+        public void dispatch(NewClientSignal signal){
+            throw new RuntimeException("This signal should not have gotten here.");
+        }
 
-        public void dispatch(RemoveClientSignal signal){}
+        public void dispatch(RemoveClientSignal signal){
+            throw new RuntimeException("This signal should not have gotten here.");
+        }
 
-        public void dispatch(ClientIDSignal signal) {}
+        public void dispatch(ClientIDSignal signal) {
+            throw new RuntimeException("This signal should not have gotten here.");
+        }
 
-        public void dispatch(ClientIDAcceptedSignal signal){}
+        public void dispatch(ClientIDAcceptedSignal signal){
+            throw new RuntimeException("This signal should not have gotten here.");
+        }
 
-        public void dispatch(ClientIDRejectedSignal signal){}
+        public void dispatch(ClientIDRejectedSignal signal){
+            throw new RuntimeException("This signal should not have gotten here.");
+        }
 
         public void dispatch(ClientThreadsFinishedSignal signal){
             clients_.remove(signal.getSender());
@@ -118,7 +127,7 @@ public class Server implements Receiver{
 
         public void dispatch(EstablisherThreadFinishedSignal signal){
             dispatch(new CloseServerSignal(name));
-            //TODO: signal the problem
+            System.err.println("Connection establisher unexpectedly exited.");
         }
 
         public void dispatch (CloseServerSignal signal){
@@ -153,7 +162,6 @@ public class Server implements Receiver{
 
         public void dispatch (TextMessage textMessage) {
 
-            //TODO: message dispatcher
             try {
 
                 if (textMessage.getReceiver().equals(name)) {
@@ -169,10 +177,10 @@ public class Server implements Receiver{
                     }
                 }
 
-                throw new InvalidParameterException("Such a client does not exist");
+                throw new InvalidParameterException("Such a client does not exist : " + textMessage.getReceiver());
             }
             catch (Exception e){
-                //TODO
+               System.out.println(e);
             }
 
         }

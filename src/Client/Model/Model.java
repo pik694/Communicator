@@ -1,7 +1,7 @@
 package Client.Model;
 
 
-import Client.Controller.MainController;
+import Client.Controllers.MainController;
 import Interfaces.Dispatcher;
 import Interfaces.Receiver;
 import Messages.Message;
@@ -94,8 +94,12 @@ public final class Model implements Receiver {
         return false;
     }
 
-    public String getClientID_() {
+    public String getClientID() {
         return clientID_;
+    }
+
+    public ObservableList<String> getOtherClients() {
+        return otherClients_;
     }
 
     public InetAddress getServerAddress(){
@@ -106,6 +110,8 @@ public final class Model implements Receiver {
     }
 
     public void disconnect(){
+
+        if (socket_ == null) return;
 
         purposeDisconnection_ = true;
 
@@ -142,12 +148,13 @@ public final class Model implements Receiver {
     private class InputThread implements Runnable {
         public void run (){
 
+            MessageDispatcher dispatcher = new MessageDispatcher();
 
             try{
                 while(true){
 
                     Message message = Message.class.cast(inputStream_.readObject());
-                    MainController.instance.send(message);
+                    message.acceptDispatcher(dispatcher);
 
                 }
             }
@@ -158,6 +165,48 @@ public final class Model implements Receiver {
                 }
             }
         }
+
+        private class MessageDispatcher implements Dispatcher {
+
+            public void dispatch(NewClientSignal signal){
+                otherClients_.add(signal.getClientID());
+            }
+            public void dispatch(RemoveClientSignal signal){
+                otherClients_.remove(signal.getClientID());
+            }
+            public void dispatch(ClientIDSignal signal){
+                throw new NotImplementedException();
+            }
+            public void dispatch(ClientIDAcceptedSignal signal){
+                throw new NotImplementedException();
+            }
+            public void dispatch(ClientIDRejectedSignal signal){
+                throw new NotImplementedException();
+            }
+
+            public void dispatch(ClientThreadsFinishedSignal signal){
+                throw new NotImplementedException();
+            }
+            public void dispatch(EstablisherThreadFinishedSignal signal){
+                throw new NotImplementedException();
+            }
+            public void dispatch(ClientConnectedSignal signal){
+                throw new NotImplementedException();
+            }
+            public void dispatch(CloseServerSignal signal){
+                throw new NotImplementedException();
+            }
+
+            public void dispatch(TextMessage textMessage){
+                try {
+                    MainController.instance.send(textMessage);
+                }
+                catch (InterruptedException e){
+                    throw new NotImplementedException();
+                }
+            }
+        }
+
 
     }
     private class OutputThread implements Runnable{
@@ -182,6 +231,7 @@ public final class Model implements Receiver {
     private final Thread inputThread_ = new Thread(new InputThread(), "inputThread");
     private final Thread outputThread_ = new Thread(new OutputThread(), "outputThread");
     private final MessagesQueue messagesQueue_ =  new MessagesQueue();
+    private final ObservableList<String> otherClients_ = FXCollections.observableList(new ArrayList<String>());
 
     private Socket socket_;
     private ObjectInputStream inputStream_;

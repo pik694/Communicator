@@ -16,8 +16,6 @@ import java.net.Socket;
 /**
  * Created by piotr on 13.04.2017.
  */
-
-//TODO: Write Client class using  NIO package
 public class Client implements Receiver {
 
 
