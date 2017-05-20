@@ -1,14 +1,16 @@
 package Server.Client;
 
 
+import Interfaces.Receiver;
 import Messages.Message;
 import Messages.MessagesQueue;
-import Messages.Signal;
-import Messages.SignalType;
-import Interfaces.Receiver;
+import Messages.Signals.ClientThreadsFinishedSignal;
+import Messages.Signals.NewClientSignal;
 import Server.Server;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
@@ -62,7 +64,7 @@ public class Client implements Receiver {
 
             oppositeThread.join();
 
-            Server.instance.send(new Signal(clientID, Server.instance.name, SignalType.CLIENT_THREADS_FINISHED, this));
+            Server.instance.send(new ClientThreadsFinishedSignal(clientID));
 
         }
         catch (Exception e){

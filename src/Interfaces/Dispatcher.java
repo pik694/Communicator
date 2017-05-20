@@ -1,7 +1,7 @@
 package Interfaces;
 
-import Messages.Message;
-import Messages.Signal;
+import Messages.Signals.*;
+import Messages.TextMessage;
 
 
 /**
@@ -9,7 +9,18 @@ import Messages.Signal;
  */
 public interface Dispatcher {
 
-    void dispatch(Message message);
-    void dispatch(Signal signal);
+    void dispatch(NewClientSignal signal);
+    void dispatch(RemoveClientSignal signal);
+    void dispatch(ClientIDSignal signal);
+    void dispatch(ClientIDAcceptedSignal signal);
+    void dispatch(ClientIDRejectedSignal signal);
+
+    void dispatch(ClientThreadsFinishedSignal signal);
+    void dispatch(EstablisherThreadFinishedSignal signal);
+    void dispatch(ClientConnectedSignal signal);
+    void dispatch(CloseServerSignal signal);
+
+    void dispatch(TextMessage textMessage);
+
 
 }

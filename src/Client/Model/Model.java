@@ -2,13 +2,15 @@ package Client.Model;
 
 
 import Client.Controller.MainController;
-import Interfaces.Receiver;
 import Interfaces.Dispatcher;
+import Interfaces.Receiver;
 import Messages.Message;
 import Messages.MessagesQueue;
-import Messages.Signal;
-import Messages.SignalType;
+import Messages.Signals.*;
+import Messages.TextMessage;
 import Server.Server;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
@@ -16,7 +18,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Vector;
+import java.util.ArrayList;
 
 
 /**
@@ -63,12 +65,12 @@ public final class Model implements Receiver {
                     + "\nclientID: " + clientID_);
         }
 
-        Signal answer;
+        Message answer;
 
         try {
 
-            outputStream_.writeObject(new Signal(clientID, Server.instance.name, SignalType.CLIENT_ID, clientID));
-            answer = Signal.class.cast(inputStream_.readObject());
+            outputStream_.writeObject(new ClientIDSignal(clientID, Server.instance.name, clientID));
+            answer = Message.class.cast(inputStream_.readObject());
 
         }
         catch (IOException e){
@@ -78,7 +80,7 @@ public final class Model implements Receiver {
             throw new NotImplementedException();
         }
 
-        if (answer.signalType == SignalType.CLIENT_ID_ACCEPTED){
+        if (answer instanceof  ClientIDAcceptedSignal){
 
             clientID_ = clientID;
 
@@ -102,7 +104,6 @@ public final class Model implements Receiver {
     public Integer getServerPortNumber(){
         return socket_ == null ? null : socket_.getPort();
     }
-
 
     public void disconnect(){
 
@@ -134,18 +135,19 @@ public final class Model implements Receiver {
     public static Model instance = new Model();
 
 
-    private Model(){}
+    private Model(){
+
+    }
 
     private class InputThread implements Runnable {
         public void run (){
 
-            MessageDispatcher dispatcher = new MessageDispatcher();
 
             try{
                 while(true){
 
                     Message message = Message.class.cast(inputStream_.readObject());
-                    message.acceptADispatcher(dispatcher);
+                    MainController.instance.send(message);
 
                 }
             }
@@ -153,30 +155,6 @@ public final class Model implements Receiver {
                 if (!purposeDisconnection_){
                     System.err.println("Unexpected exception: " + e);
                     System.exit(1);
-                }
-            }
-        }
-
-        private class MessageDispatcher implements Dispatcher {
-            public void dispatch(Message message){
-                try {
-                    MainController.instance.send(message);
-                }
-                catch (InterruptedException e){
-                    throw new NotImplementedException();
-                }
-
-            }
-            public void dispatch(Signal signal){
-                switch (signal.signalType){
-                    case ADD_CLIENT:
-                        otherClients_.add(String.class.cast(signal.object));
-                        break;
-                    case REMOVE_CLIENT:
-                        otherClients_.remove(signal.object);
-                        break;
-                    default:
-                        throw new NotImplementedException();
                 }
             }
         }
@@ -204,7 +182,6 @@ public final class Model implements Receiver {
     private final Thread inputThread_ = new Thread(new InputThread(), "inputThread");
     private final Thread outputThread_ = new Thread(new OutputThread(), "outputThread");
     private final MessagesQueue messagesQueue_ =  new MessagesQueue();
-    private final Vector<String> otherClients_ = new Vector<>();
 
     private Socket socket_;
     private ObjectInputStream inputStream_;

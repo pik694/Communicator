@@ -1,7 +1,6 @@
 package Server.Deamons;
 
-import Messages.Signal;
-import Messages.SignalType;
+import Messages.Signals.*;;
 import Server.Client.Client;
 import Server.Server;
 
@@ -32,7 +31,7 @@ public class ConnectionEstablisher implements Runnable{
 
                 try{
                     Client client = establishConnection(serverSocket);
-                    Server.instance.send(new Signal(name, Server.instance.name, SignalType.CLIENT_CONNECTED, client));
+                    Server.instance.send(new ClientConnectedSignal(name, client));
                 }
                 catch (IOException e){
                     if (thread.isInterrupted()){
@@ -44,7 +43,7 @@ public class ConnectionEstablisher implements Runnable{
         }
         catch (Exception e){
             try{
-                Server.instance.send(new Signal(name, Server.instance.name, SignalType.ESTABLISHER_THREAD_FINISHED));
+                Server.instance.send(new EstablisherThreadFinishedSignal(name));
             }
             catch (InterruptedException exception){
                 System.err.println("Unable to exit properly. Program will exit.");
@@ -76,20 +75,20 @@ public class ConnectionEstablisher implements Runnable{
 
             while (true){
 
-                Signal signal;
+                ClientIDSignal signal;
                 try {
-                    signal = (Signal) inputStream.readObject();
-                    if (signal.signalType == SignalType.CLIENT_ID){
-                        if (Server.instance.validateClientID(signal.message)){
-                            outputStream.writeObject(new Signal(Server.instance.name, signal.message, SignalType.CLIENT_ID_ACCEPTED));
-                            return  new Client(signal.message, socket, inputStream, outputStream);
+                    signal = ClientIDSignal.class.cast(inputStream.readObject());
+                    if (signal != null){
+                        if (Server.instance.validateClientID(signal.getClientID())){
+                            outputStream.writeObject(new ClientIDAcceptedSignal(name, signal.getClientID()));
+                            return  new Client(signal.getClientID(), socket, inputStream, outputStream);
                         }
                     }
-                    outputStream.writeObject(new Signal(Server.instance.name, "noID", SignalType.CLIENT_ID_REJECTED));
+                    outputStream.writeObject(new ClientIDRejectedSignal(name, signal.getClientID()));
                 }
 
                 catch (ClassNotFoundException e){
-                    outputStream.writeObject(new Signal(Server.instance.name, "noID", SignalType.CLIENT_ID_REJECTED));
+                    outputStream.writeObject(new ClientIDRejectedSignal(name, "unnamed"));
                 }
 
             }
@@ -101,7 +100,7 @@ public class ConnectionEstablisher implements Runnable{
 
     }
 
-    private final String name = "__connection_establisher__";
+    public final String name = "__connection_establisher__";
     private final Thread thread;
     private static final int TIMEOUT = 1000;
     private static final int PORT_NR = 65256;

@@ -1,0 +1,22 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Label?>
+
+
+<GridPane xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10" fx:controller="Client.Controller.MainController">
+
+
+    <padding><Insets top="25" right="25" bottom="10" left="25"/></padding>
+
+    <Label text="Select server address" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.halignment="RIGHT"/>
+    <Label text="Select port" GridPane.columnIndex="0" GridPane.rowIndex="1" GridPane.halignment="RIGHT"/>
+    <TextField fx:id="serverAddressTextField" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+    <TextField fx:id="portNumberTextField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    <Button fx:id="acceptButton"  text="OK" GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.halignment="CENTER"  onAction="#clickedAcceptButton" />
+    <Button fx:id="cancelButton"  text="Cancel" GridPane.columnIndex="1" GridPane.rowIndex="2" GridPane.halignment="CENTER" onAction="#clickedCancelButton"/>
+
+    <Label fx:id="warningText" text="Cannot connect to the selected server. Check provided data or choose another server." visible="false" GridPane.rowIndex="3" GridPane.columnSpan="2"/>
+
+</GridPane>

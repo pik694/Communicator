@@ -1,19 +1,19 @@
 package Server;
 
 
+import Interfaces.Dispatcher;
+import Interfaces.Receiver;
 import Messages.Message;
 import Messages.MessagesQueue;
-import Messages.Signal;
-import Messages.SignalType;
+import Messages.Signals.*;
+import Messages.TextMessage;
 import Server.Client.Client;
 import Server.Deamons.ConnectionEstablisher;
-import Interfaces.Receiver;
-import Interfaces.Dispatcher;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 
 import java.security.InvalidParameterException;
 import java.util.Vector;
+
+
 
 /**
  * Created by piotr on 27.04.2017.
@@ -30,7 +30,7 @@ public class Server implements Receiver{
 
 
     public boolean validateClientID(String clientID) {
-        for (Client client : clients){
+        for (Client client : clients_){
             if (client.getClientID().equals(clientID)){
                 return false;
             }
@@ -59,10 +59,8 @@ public class Server implements Receiver{
                 //TODO: remove printing messages
                 System.out.println(message.toString());
 
-                message.acceptADispatcher(dispatcher);
+                message.acceptDispatcher(dispatcher);
 
-                //TODO: is it necessary ?
-               if (Thread.interrupted()) break;
 
             }
             catch (InterruptedException e){
@@ -77,7 +75,7 @@ public class Server implements Receiver{
 
         try{
             connectionEstablisher.join();
-            for (Client client : clients){
+            for (Client client : clients_){
                 client.closeClient();
             }
         }
@@ -94,82 +92,79 @@ public class Server implements Receiver{
 
     public class MessagesDispatcher implements Dispatcher {
 
-        /**
-         * This method dispatches a signal.
-         * @param signal a signal to be dispatched.
-         */
-        public void dispatch(Signal signal){
-            switch (signal.signalType){
-                case CLIENT_CONNECTED:
-                    try {
-                        Client newClient = Client.class.cast(signal.object);
+        //TODO: Handle unneeded signals
+        public void dispatch(NewClientSignal signal){}
 
-                        for (Client client : clients){
-                            client.send(new Signal(name, client.getClientID(), SignalType.ADD_CLIENT, newClient.getClientID()));
-                            newClient.send(new Signal(name, newClient.getClientID(), SignalType.ADD_CLIENT, client.getClientID()));
-                        }
-                        clients.addElement(newClient);
+        public void dispatch(RemoveClientSignal signal){}
 
-                        newClient.start();
-                    }
-                    catch (ClassCastException e){
-                        System.err.println("invalid client given");
-                    }
-                    catch (InterruptedException e){
-                        System.err.println("Unexpected exception:" + e);
-                        System.exit(2);
-                    }
-                    break;
-                case CLIENT_THREADS_FINISHED:
-                    clients.remove(signal.object);
+        public void dispatch(ClientIDSignal signal) {}
 
+        public void dispatch(ClientIDAcceptedSignal signal){}
 
-                    try {
-                        for (Client client : clients) {
-                            client.send(new Signal(name, client.getClientID(), SignalType.REMOVE_CLIENT, signal.sender));
-                        }
-                    }
-                    catch (InterruptedException e){
-                        System.err.println("Unexpected exception:" + e);
-                        System.exit(3);
-                    }
+        public void dispatch(ClientIDRejectedSignal signal){}
 
-                    break;
-                case ESTABLISHER_THREAD_FINISHED:
-                case CLOSE_SERVER:
-                    close();
-                    System.exit(0);
-                    break;
-                default:
-                    System.err.println(signal.signalType);
-                    throw new NotImplementedException();
-                    //TODO
-                    // break;
+        public void dispatch(ClientThreadsFinishedSignal signal){
+            clients_.remove(signal.getSender());
+            try {
+                for (Client client : clients_) {
+                    client.send(new RemoveClientSignal(name, client.getClientID(),signal.getSender()));
+                }
             }
+            catch (InterruptedException e){
+                System.err.println("Unexpected exception:" + e);
+                System.exit(3);
+            }
+        }
 
+        public void dispatch(EstablisherThreadFinishedSignal signal){
+            dispatch(new CloseServerSignal(name));
+            //TODO: signal the problem
+        }
 
+        public void dispatch (CloseServerSignal signal){
+            System.out.println("Server is closing");
+            close();
+            System.out.println("All modules has been closed properly. Server will terminate.");
+            System.exit(0);
+        }
+
+        public void dispatch (ClientConnectedSignal signal){
+
+            try {
+                Client newClient = Client.class.cast(signal.getClient());
+
+                for (Client client : clients_){
+                    client.send(new NewClientSignal(name, client.getClientID(), newClient.getClientID()));
+                    newClient.send(new NewClientSignal(name, newClient.getClientID(), client.getClientID()));
+                }
+                clients_.addElement(newClient);
+
+                newClient.start();
+            }
+            catch (ClassCastException e){
+                System.err.println("invalid client given");
+            }
+            catch (InterruptedException e){
+                System.err.println("Unexpected exception:" + e);
+                System.exit(2);
+            }
 
         }
 
-        /**
-         * This method dispatches a message.
-         * @param message a message to be dispatched.
-         * @throws InvalidParameterException when such a client does not exist.
-         */
-        public void dispatch(Message message){
+        public void dispatch (TextMessage textMessage) {
 
             //TODO: message dispatcher
             try {
 
-                if (message.receiver.equals(name)) {
+                if (textMessage.getReceiver().equals(name)) {
 
-                    System.out.println(message.message);
+                    System.out.println(textMessage.getMessage());
                     return;
                 }
 
-                for (Client client : instance.clients) {
-                    if (message.receiver.equals(client.getClientID())) {
-                        client.send(message);
+                for (Client client : instance.clients_) {
+                    if (textMessage.getReceiver().equals(client.getClientID())) {
+                        client.send(textMessage);
                         return;
                     }
                 }
@@ -179,6 +174,7 @@ public class Server implements Receiver{
             catch (Exception e){
                 //TODO
             }
+
         }
     }
 
@@ -189,7 +185,7 @@ public class Server implements Receiver{
 
 
     public final String name = "__server__";
-    private Vector<Client> clients = new Vector<>();
+    private Vector<Client> clients_ = new Vector<>();
     private ConnectionEstablisher connectionEstablisher = null;
     private MessagesQueue messages = new MessagesQueue();
 }

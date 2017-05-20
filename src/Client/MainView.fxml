@@ -1,0 +1,22 @@
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.ListView?>
+
+<GridPane xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10" fx:controller="Client.Controller.MainController">
+
+
+    <padding><Insets top="10" right="25" bottom="25" left="25"/></padding>
+
+
+    <ButtonBar GridPane.halignment="LEFT" GridPane.rowSpan="1">
+        <buttons>
+            <Button fx:id="serverSelectionButton" text="Server" ButtonBar.buttonData="LEFT"/>
+            <Button fx:id="aboutButton" text="About" ButtonBar.buttonData="HELP" />
+        </buttons>
+    </ButtonBar>
+
+    <ListView fx:id="otherClientsListView" GridPane.rowIndex="1" GridPane.fillHeight="true" GridPane.fillWidth="true"/>
+
+</GridPane>
