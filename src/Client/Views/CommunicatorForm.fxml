@@ -6,17 +6,15 @@
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.GridPane?>
 
-<GridPane alignment="center" hgap="10" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112" fx:controller="Client.Controllers.MainController">
+<GridPane alignment="center" hgap="10" vgap="10" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.112">
 
     <padding> <Insets bottom="25" left="25" right="25" top="10" /> </padding>
 
     <ListView fx:id="messagesHistoryListView" GridPane.columnIndex="0" GridPane.fillHeight="true" GridPane.fillWidth="true" GridPane.rowIndex="0" GridPane.columnSpan="2" />
 
-    <TextArea fx:id="textArea" GridPane.columnIndex="0" GridPane.fillWidth="true" GridPane.rowIndex="1" />
+    <TextArea fx:id="textArea" GridPane.columnIndex="0" GridPane.fillWidth="true" GridPane.rowIndex="1"/>
 
-    <Button fx:id="sendButton" text="Send" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-
-
+    <Button fx:id="sendButton" text="Send" GridPane.columnIndex="1" GridPane.rowIndex="1" onAction="#clickedSendButton"/>
 
 
 </GridPane>

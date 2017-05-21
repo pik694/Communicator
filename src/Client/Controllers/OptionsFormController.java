@@ -62,8 +62,8 @@ public class OptionsFormController implements Initializable{
     }
 
     @FXML
-    protected void clickedCancelButton(ActionEvent event){
-        ((Stage) ((Node) event.getSource()).getScene().getWindow()).close();
+    protected void clickedExitButton(ActionEvent event){
+        System.exit(0);
     }
 
 

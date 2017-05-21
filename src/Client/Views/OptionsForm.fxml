@@ -18,8 +18,8 @@
     <TextField fx:id="portNumberTextField" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
     <TextField fx:id="clientIdTextField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-    <Button fx:id="acceptButton"  text="OK" onAction="#clickedAcceptButton" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.halignment="CENTER"/>
-    <Button fx:id="cancelButton"  text="Cancel" onAction="#clickedCancelButton" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.halignment="CENTER"/>
+    <Button fx:id="acceptButton"  text="Connect" onAction="#clickedAcceptButton" GridPane.columnIndex="0" GridPane.rowIndex="3" GridPane.halignment="CENTER"/>
+    <Button fx:id="exitButton"  text="Exit" onAction="#clickedExitButton" GridPane.columnIndex="1" GridPane.rowIndex="3" GridPane.halignment="CENTER"/>
 
     <Label fx:id="warningText" visible="false" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
 

@@ -169,9 +169,11 @@ public final class Model implements Receiver {
         private class MessageDispatcher implements Dispatcher {
 
             public void dispatch(NewClientSignal signal){
+                // TODO:
                 otherClients_.add(signal.getClientID());
             }
             public void dispatch(RemoveClientSignal signal){
+                //TODO:
                 otherClients_.remove(signal.getClientID());
             }
             public void dispatch(ClientIDSignal signal){
@@ -199,6 +201,9 @@ public final class Model implements Receiver {
 
             public void dispatch(TextMessage textMessage){
                 try {
+
+                    //TODO
+
                     MainController.instance.send(textMessage);
                 }
                 catch (InterruptedException e){
@@ -231,7 +236,6 @@ public final class Model implements Receiver {
     private final Thread inputThread_ = new Thread(new InputThread(), "inputThread");
     private final Thread outputThread_ = new Thread(new OutputThread(), "outputThread");
     private final MessagesQueue messagesQueue_ =  new MessagesQueue();
-    private final ObservableList<String> otherClients_ = FXCollections.observableList(new ArrayList<String>());
 
     private Socket socket_;
     private ObjectInputStream inputStream_;

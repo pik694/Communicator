@@ -1,5 +1,7 @@
 package Client;
 
+import Client.Controllers.MainController;
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -9,6 +11,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import Client.Model.Model;
+import javafx.stage.Window;
 
 
 /**
@@ -72,15 +75,21 @@ public class Client extends Application {
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("Views/MainView.fxml"));
 
-        //fxmlLoader.setController(MainController.instance);
+        fxmlLoader.setController(MainController.instance);
 
         Parent root = fxmlLoader.load();
 
         primaryStage.setScene(new Scene(root));
+        primaryStage.setOnCloseRequest((windowEvent)->Model.instance.disconnect());
+
         primaryStage.show();
 
 
         Stage serverStage = new Stage();
+        serverStage.setOnCloseRequest((windowEvent)-> {
+            if (Model.instance.getClientID() == null) windowEvent.consume();
+        });
+
         serverStage.setTitle("Select the server");
 
         Parent options = FXMLLoader.load(getClass().getResource("Views/OptionsForm.fxml"));

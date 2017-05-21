@@ -3,22 +3,18 @@ package Client.Controllers;
 import Client.Model.Model;
 import Interfaces.Receiver;
 import Messages.Message;
-import Messages.MessagesQueue;
 import Messages.TextMessage;
-import javafx.event.ActionEvent;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.control.ListView;
 
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-
+import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.ResourceBundle;
+import java.util.Vector;
 
 /**
  * Created by piotr on 18.05.2017.
@@ -40,16 +36,29 @@ public class MainController implements Receiver, Initializable {
 
     public void initialize(URL url, ResourceBundle resourceBundle){
 
-        otherClientsListView.setItems(Model.instance.getOtherClients());
+        otherClientsListView.setItems(otherClients_);
 
     }
 
 
     @FXML
-    private void selectedUser(){
+    private void selectedUser() throws IOException{
 
-        //TODO
-        System.out.println(otherClientsListView.getSelectionModel().getSelectedItem());
+        String selectedUser = otherClientsListView.getSelectionModel().getSelectedItem();
+
+        if (selectedUser == null) return;
+
+        for (CommunicatorFormController chat : openedChats_){
+            if (chat.getUser().equals(selectedUser)){
+
+                chat.showWindow();
+
+                return;
+            }
+        }
+
+        openedChats_.add(new CommunicatorFormController(selectedUser));
+
     }
 
 
@@ -69,14 +78,15 @@ public class MainController implements Receiver, Initializable {
 
     public  static final MainController instance = new MainController();
 
-    public  MainController() {
+    private  MainController() {
 
     }
 
     @FXML
     private ListView<String> otherClientsListView;
+    private final ObservableList<String> otherClients_ = FXCollections.observableList(new ArrayList<String>());
 
-
+    private Vector<CommunicatorFormController> openedChats_ = new Vector<>();
 
 
 }
