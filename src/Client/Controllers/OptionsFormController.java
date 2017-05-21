@@ -13,10 +13,19 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
+ * Controller responsible from connecting to the server.
  * Created by piotr on 20.05.2017.
+ * @version 1.0
+ * @author piotr
  */
 public class OptionsFormController implements Initializable{
 
+
+    /**
+     * Sets up the view
+     * @param url
+     * @param resourceBundle
+     */
     public void initialize(URL url, ResourceBundle resourceBundle){
 
         serverAddressTextField.setText("localhost");
@@ -25,8 +34,10 @@ public class OptionsFormController implements Initializable{
 
     }
 
-
-    public void clickedAcceptButton(ActionEvent event){
+    /**
+     * Handles acceptButton pushed event. Validates data and tries to connect to given server. If successfully connected then closes dialog, if not - displays adequate message.
+     */
+    public void clickedAcceptButton(){
 
 
 
@@ -52,7 +63,8 @@ public class OptionsFormController implements Initializable{
         else if (Model.instance.setServer(serverAddressTextField.getText(), port)
                 && Model.instance.setClientId(clientIdTextField.getText()))
         {
-            ((Stage) ((Node) event.getSource()).getScene().getWindow()).close();
+            //Ugly cast but works.
+            ((Stage) warningText.getScene().getWindow()).close();
         }
         else {
             warningText.setText("Error. At least one of the values is invalid.");
@@ -61,8 +73,11 @@ public class OptionsFormController implements Initializable{
         warningText.setVisible(true);
     }
 
+    /**
+     * Handles exitButton pushed event. Closes application.
+     */
     @FXML
-    protected void clickedExitButton(ActionEvent event){
+    protected void clickedExitButton(){
         System.exit(0);
     }
 

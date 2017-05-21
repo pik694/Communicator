@@ -5,11 +5,19 @@ import Interfaces.Dispatcher;
 
 
 /**
+ * Abstract base class to all the messages being used to communication between either clients or server threads.
  * Created by piotr on 13.04.2017.
+ * @version 1.0
+ * @author piotr
  */
 public abstract class Message implements Serializable{
 
-
+    /**
+     * Default constructor
+     * @param sender who has sent this message
+     * @param receiver to whom should this message get
+     * @throws NullPointerException
+     */
     public Message (String sender, String receiver) throws NullPointerException{
 
         if (sender == null || receiver == null){
@@ -24,6 +32,7 @@ public abstract class Message implements Serializable{
     public void acceptDispatcher(Dispatcher dispatcher){
         throw new RuntimeException("RTTI error");
     }
+
 
     public final String getReceiver() {
         return receiver_;

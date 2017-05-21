@@ -1,27 +1,16 @@
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ButtonBar?>
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
-
-<?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.Tab?>
-
-<GridPane xmlns:fx="http://javafx.com/fxml" alignment="center" hgap="10" vgap="10" >
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.112" xmlns:fx="http://javafx.com/fxml/1" minHeight="200" minWidth="100">
 
 
-    <padding><Insets top="10" right="25" bottom="25" left="25"/></padding>
-
-
-    <ButtonBar GridPane.halignment="LEFT" GridPane.rowSpan="1">
-        <buttons>
-            <Button text="add" onAction="#newItemButtonClicked" />
-            <Button text="remove" onAction="#removeItemButtonClicked"/>
-        </buttons>
-    </ButtonBar>
-
-    <ListView fx:id="otherClientsListView" GridPane.rowIndex="1" GridPane.fillWidth="true" onMouseClicked="#selectedUser"/>
+    <Label text="Connected users"  AnchorPane.topAnchor="5.0" AnchorPane.leftAnchor="5.0"/>
+    <ListView fx:id="otherClientsListView" onMouseClicked="#selectedUser" AnchorPane.topAnchor="25" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.bottomAnchor="5.0"/>
 
 
 
-</GridPane>
+</AnchorPane>

@@ -1,73 +1,36 @@
 package Client;
 
 import Client.Controllers.MainController;
-import com.sun.org.apache.xpath.internal.operations.Mod;
+import Client.Model.Model;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import Client.Model.Model;
-import javafx.stage.Window;
-
 
 /**
+ * Main client's side class.
  * Created by piotr on 27.04.2017.
+ * @version 1.0
+ * @author piotr
  */
 public class Client extends Application {
 
+    /**
+     * Where client's process starts
+     * @param args
+     */
     public static void main(String [] args){
-
-//        try (
-//                BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
-//                )
-//        {
-//
-//            Model.instance.setServer("localhost", 65256);
-//
-//            String name;
-//
-//
-//            do{
-//                name = stdIn.readLine();
-//            } while (Model.instance.setClientId(name) == false);
-//
-//
-//
-////            String another = stdIn.readLine();
-////
-////            while (true){
-////
-////                String  text = stdIn.readLine();
-////
-////                Model.instance.send(new Message(name, another, text));
-////
-////
-////                if (text.equals("exit")) {
-////                    Model.instance.disconnect();
-////                    System.exit(0);
-////                }
-////            }
-//
-//
-//        }
-//        catch (Exception e){
-//            System.err.println(e);
-//            System.exit(1);
-//        }
-
-
-        //Model.instance.setServer("localhost", 65256);
-        //Model.instance.setClientId("żaba");
-
         launch(args);
-
-        Model.instance.disconnect();
     }
 
+    /**
+     * Here primary stage is being set and dialog form responsible for connecting to the server is being shown.
+     * @param primaryStage
+     * @throws Exception
+     */
     @Override
     public void start(Stage primaryStage) throws Exception{
 
@@ -80,7 +43,14 @@ public class Client extends Application {
         Parent root = fxmlLoader.load();
 
         primaryStage.setScene(new Scene(root));
-        primaryStage.setOnCloseRequest((windowEvent)->Model.instance.disconnect());
+        primaryStage.setOnCloseRequest((windowEvent)->{
+            Model.instance.disconnect();
+            System.exit(0);
+        });
+
+
+        primaryStage.setMinHeight(200);
+        primaryStage.setMinWidth(150);
 
         primaryStage.show();
 
@@ -95,12 +65,14 @@ public class Client extends Application {
         Parent options = FXMLLoader.load(getClass().getResource("Views/OptionsForm.fxml"));
 
         serverStage.setScene(new Scene(options));
+        serverStage.setResizable(false);
 
         serverStage.initOwner(primaryStage);
         serverStage.initModality(Modality.WINDOW_MODAL);
 
         serverStage.showAndWait();
 
+        primaryStage.setTitle("User:" + Model.instance.getClientID());
 
     }
 

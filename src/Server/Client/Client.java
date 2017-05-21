@@ -14,12 +14,26 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 /**
+ *
+ * Represents a client connected to the server. <br>
+ * Responsible for sending and receiving messages to/from client.
+ *
  * Created by piotr on 13.04.2017.
+ *
+ * @version 1.0
+ * @author piotr
  */
 public class Client implements Receiver {
 
 
-
+    /**
+     * Default constructor. <br>
+     * @param clientID
+     * @param socket
+     * @param inputStream
+     * @param outputStream
+     * @throws IOException
+     */
     public Client(String clientID, Socket socket, ObjectInputStream inputStream, ObjectOutputStream outputStream) throws IOException {
 
         this.clientID = clientID;
@@ -36,17 +50,25 @@ public class Client implements Receiver {
 
     }
 
-
+    /**
+     * Starts client's threads.
+     */
     public void start(){
         in.start();
         out.start();
     }
 
+    /**
+     * Closes connection with client.
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public void closeClient () throws IOException, InterruptedException{
         socket.close();
         in.join();
         out.join();
     }
+
 
     private synchronized void close(){
 
@@ -72,15 +94,27 @@ public class Client implements Receiver {
 
     }
 
+    /**
+     * Receives a message that will be sent to the client.
+     * @param message
+     * @throws InterruptedException
+     */
     public void send(Message message)throws InterruptedException{
         outClient.messages.addMessage(message);
     }
 
+    /**
+     *
+     * @return returns client's ID
+     */
     public String getClientID(){
         return clientID;
     }
 
 
+    /**
+     * Class responsible for receiving messages from client and sending them to the server. Wraps a thread.
+     */
     private class InClient implements Runnable{
 
         public void run(){
@@ -112,6 +146,10 @@ public class Client implements Receiver {
         }
 
     }
+
+    /**
+     * Class responsible for sending messages to the client. Wraps a thread.
+     */
     private class OutClient implements Runnable{
 
 

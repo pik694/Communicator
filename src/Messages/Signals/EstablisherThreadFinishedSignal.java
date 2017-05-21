@@ -5,7 +5,10 @@ import Messages.Message;
 import Server.Server;
 
 /**
+ * Singal is being sent to the server when connection establisher finishes.
  * Created by piotr on 20.05.2017.
+ * @version 1.0
+ * @author piotr
  */
 public class EstablisherThreadFinishedSignal extends Message {
 

@@ -5,7 +5,10 @@ import Messages.TextMessage;
 
 
 /**
+ * Objects conforming to this interface are accepted by all the messages.
  * Created by piotr on 17.05.2017.
+ * @author piotr
+ * @version 1.0
  */
 public interface Dispatcher {
 

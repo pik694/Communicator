@@ -4,45 +4,75 @@ import Client.Model.Model;
 import Interfaces.Receiver;
 import Messages.Message;
 import Messages.TextMessage;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ListView;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.ResourceBundle;
 import java.util.Vector;
 
 /**
+ * Main controller. A singleton.
+ * Controls main app window and is a proxy between chats controllers and Model.
  * Created by piotr on 18.05.2017.
+ * @version 1.0
+ * @author piotr
  */
 
-//TODO: singleton
 public class MainController implements Receiver, Initializable {
 
+    /**
+     * @deprecated
+     * @param message
+     * @throws InterruptedException
+     */
     public void send (Message message) throws InterruptedException {
 
-
-    }
-    public void send (TextMessage message) throws InterruptedException {
-        System.out.println(message.getSender() + " says: " + message.getMessage());
     }
 
+    /**
+     * Receives message from model and sends it further to the proper chat controller.
+     * @param message text message being received from model.
+     * @throws InterruptedException
+     */
+    public void send (TextMessage message) throws InterruptedException{
+
+        for (CommunicatorFormController chat : openedChats_){
+            if (chat.getUser().equals(message.getSender())){
+                chat.sendMessage(message);
+                chat.showWindow();
+                return;
+            }
+        }
+
+        CommunicatorFormController newChat = new CommunicatorFormController(message.getSender());
+
+        newChat.sendMessage(message);
+
+        openedChats_.add(newChat);
+
+    }
 
 
-
+    /**
+     * Sets up the view.
+     * @param url
+     * @param resourceBundle
+     */
     public void initialize(URL url, ResourceBundle resourceBundle){
 
-        otherClientsListView.setItems(otherClients_);
+        otherClientsListView.setItems(Model.instance.getOtherClients());
 
     }
 
-
+    /**
+     * Handles event of selection of a user to talk to. Opens new chat or does nothing if the proper chat has already been opened.
+     * @throws IOException
+     */
     @FXML
-    private void selectedUser() throws IOException{
+    protected void selectedUser() throws IOException{
 
         String selectedUser = otherClientsListView.getSelectionModel().getSelectedItem();
 
@@ -62,20 +92,9 @@ public class MainController implements Receiver, Initializable {
     }
 
 
-
-    //TODO: remove
-    @FXML
-    private void newItemButtonClicked(){
-        otherClientsListView.getItems().add("new");
-    }
-
-    @FXML
-    private void removeItemButtonClicked(){
-        otherClientsListView.getItems().remove("new");
-    }
-
-
-
+    /**
+     * The only instance - singleton.
+     */
     public  static final MainController instance = new MainController();
 
     private  MainController() {
@@ -83,8 +102,8 @@ public class MainController implements Receiver, Initializable {
     }
 
     @FXML
-    private ListView<String> otherClientsListView;
-    private final ObservableList<String> otherClients_ = FXCollections.observableList(new ArrayList<String>());
+    protected ListView<String> otherClientsListView;
+
 
     private Vector<CommunicatorFormController> openedChats_ = new Vector<>();
 

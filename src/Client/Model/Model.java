@@ -11,8 +11,12 @@ import Messages.TextMessage;
 import Server.Server;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.ScheduledService;
+import javafx.concurrent.Task;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import javax.annotation.Generated;
+import javax.swing.table.TableStringConverter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -22,7 +26,10 @@ import java.util.ArrayList;
 
 
 /**
+ * This is a singleton responsible for communication with the server, it also connects and disconnects to/from the server.
  * Created by piotr on 17.05.2017.
+ * @version 1.0
+ * @author piotr
  */
 public final class Model implements Receiver {
 
@@ -30,6 +37,12 @@ public final class Model implements Receiver {
         messagesQueue_.addMessage(message);
     }
 
+    /**
+     * Sets the server which connect to. Should be used only once.
+     * @param address IP address of the server
+     * @param port port number on which server listens to
+     * @return returns true if connection was successful
+     */
     public boolean setServer (String address, int port){
 
         Socket temporarySocket;
@@ -57,6 +70,12 @@ public final class Model implements Receiver {
         return true;
     }
 
+
+    /**
+     * Sends to the clients chosen ID and waits for the ACK/NACK signal. Once returned true the ID cannot be changed.
+     * @param clientID chosen ID
+     * @return returns true if server has accepted given ID
+     */
     public boolean setClientId (String clientID){
 
         if (socket_ != null && clientID_ != null){
@@ -94,10 +113,19 @@ public final class Model implements Receiver {
         return false;
     }
 
+    /**
+     *
+     * @return clients ID, null if not assigned yet
+     */
     public String getClientID() {
         return clientID_;
     }
 
+
+    /**
+     * Returns a list of connected clients beside us.
+     * @return an observable list of other clients
+     */
     public ObservableList<String> getOtherClients() {
         return otherClients_;
     }
@@ -109,6 +137,10 @@ public final class Model implements Receiver {
         return socket_ == null ? null : socket_.getPort();
     }
 
+
+    /**
+     * Disconnects safely from the server.
+     */
     public void disconnect(){
 
         if (socket_ == null) return;
@@ -117,13 +149,11 @@ public final class Model implements Receiver {
 
         try {
 
-            inputThread_.interrupt();
             outputThread_.interrupt();
 
             socket_.close();
 
             outputThread_.join();
-            inputThread_.join();
 
             socket_ = null;
             inputStream_ = null;
@@ -134,10 +164,12 @@ public final class Model implements Receiver {
             System.err.println(e);
             throw new NotImplementedException();
         }
-
-        purposeDisconnection_ = false;
     }
 
+
+    /**
+     * The only instance - singleton.
+     */
     public static Model instance = new Model();
 
 
@@ -145,37 +177,47 @@ public final class Model implements Receiver {
 
     }
 
-    private class InputThread implements Runnable {
-        public void run (){
+    private class InputThread extends ScheduledService<Message> {
 
-            MessageDispatcher dispatcher = new MessageDispatcher();
-
-            try{
-                while(true){
-
-                    Message message = Message.class.cast(inputStream_.readObject());
-                    message.acceptDispatcher(dispatcher);
-
+        protected Task<Message> createTask(){
+            return new Task<Message>() {
+                @Override
+                protected Message call() throws Exception {
+                    try{
+                         return Message.class.cast(inputStream_.readObject());
+                    }
+                    catch (Exception e){
+                        if (!purposeDisconnection_){
+                            System.err.println("Connection with server has been closed.");
+                            System.exit(1);
+                        }
+                        else throw e;
+                    }
+                    return null;
                 }
-            }
-            catch (Exception e){
-                if (!purposeDisconnection_){
-                    System.err.println("Unexpected exception: " + e);
-                    System.exit(1);
-                }
-            }
+            };
         }
+
+        public InputThread(){
+            this.setOnSucceeded((event -> {
+
+                Message.class.cast(event.getSource().getValue()).acceptDispatcher(dispatcher);
+
+            }));
+
+            this.setRestartOnFailure(false);
+        }
+
+        private MessageDispatcher dispatcher = new MessageDispatcher();
 
         private class MessageDispatcher implements Dispatcher {
 
             public void dispatch(NewClientSignal signal){
-                // TODO:
                 otherClients_.add(signal.getClientID());
             }
             public void dispatch(RemoveClientSignal signal){
-                //TODO:
-                otherClients_.remove(signal.getClientID());
-            }
+                    otherClients_.remove(signal.getClientID());
+                }
             public void dispatch(ClientIDSignal signal){
                 throw new NotImplementedException();
             }
@@ -202,8 +244,6 @@ public final class Model implements Receiver {
             public void dispatch(TextMessage textMessage){
                 try {
 
-                    //TODO
-
                     MainController.instance.send(textMessage);
                 }
                 catch (InterruptedException e){
@@ -225,7 +265,7 @@ public final class Model implements Receiver {
             }
             catch (Exception e){
                 if (!purposeDisconnection_){
-                    System.err.println("Unexpected exception: " + e);
+                    System.err.println("Connection with server has been closed.");;
                     System.exit(1);
                 }
             }
@@ -233,9 +273,10 @@ public final class Model implements Receiver {
         }
     }
 
-    private final Thread inputThread_ = new Thread(new InputThread(), "inputThread");
+    private final InputThread inputThread_ = new InputThread();
     private final Thread outputThread_ = new Thread(new OutputThread(), "outputThread");
     private final MessagesQueue messagesQueue_ =  new MessagesQueue();
+    private final ObservableList<String> otherClients_ = FXCollections.observableList(new ArrayList<String>());
 
     private Socket socket_;
     private ObjectInputStream inputStream_;

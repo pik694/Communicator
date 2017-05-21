@@ -4,3 +4,7 @@
 .gitignore
 PROZ_Communicator.iml
 out/
+META-INF
+.DS_Store
+META-INF/
+src/.DS_Store

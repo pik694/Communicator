@@ -4,7 +4,10 @@ import Interfaces.Dispatcher;
 import Messages.Message;
 
 /**
+ * Signal is being sent to the all the clients when a client disconnects and is no longer available.
  * Created by piotr on 20.05.2017.
+ * @version 1.0
+ * @author piotr
  */
 public class RemoveClientSignal extends Message {
 

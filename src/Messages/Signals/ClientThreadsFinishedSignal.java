@@ -7,7 +7,10 @@ import Messages.Message;
 import Server.Server;
 
 /**
+ * Informs the server main thread that client has exited and the server should remove the client from clients' list.
  * Created by piotr on 20.05.2017.
+ * @version 1.0
+ * @author piotr
  */
 public class ClientThreadsFinishedSignal extends Message{
 

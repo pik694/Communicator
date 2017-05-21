@@ -8,7 +8,8 @@ import Messages.MessagesQueue;
 import Messages.Signals.*;
 import Messages.TextMessage;
 import Server.Client.Client;
-import Server.Deamons.ConnectionEstablisher;
+import Server.Daemons.ConnectionEstablisher;
+import Server.Daemons.SuperUser;
 
 import java.security.InvalidParameterException;
 import java.util.Vector;
@@ -17,18 +18,32 @@ import java.util.Vector;
 
 /**
  * Created by piotr on 27.04.2017.
+ *
+ * Main server class. Here everything begins and ends.
+ *
+ * @version 1.0
+ * @author piotr
  */
 public class Server implements Receiver{
 
 
-    public static void main (String [] args){
+    /**
+     * Place where the ball starts rolling
+     */
 
+    public static void main (String [] args){
         instance.init();
         instance.run();
 
     }
 
 
+    /**
+     * Checks if connection establisher can connect new client with such an ID.
+     * Checks if client with such an ID is already connected.
+     * @param clientID ID to be validated
+     * @return false if a client with such an ID is already connected to the server.
+     */
     public boolean validateClientID(String clientID) {
         for (Client client : clients_){
             if (client.getClientID().equals(clientID)){
@@ -38,15 +53,44 @@ public class Server implements Receiver{
         return true;
     }
 
+
+    /**
+     * Gives all clients' IDs.
+     * @return Vector of strings where each string is an ID of a client connected to the server.
+     */
+    public Vector <String> getClients (){
+
+        Vector <String> clients = new Vector<>();
+
+        for (Client client : clients_){
+            clients.add(client.getClientID());
+        }
+
+        return clients;
+    }
+
+
+    /**
+     * Written to conform to Receiver interface
+     * @param message message to receive and then dispatch
+     * @throws InterruptedException sometimes thread must wait to add message to the queue, so it might be interrupted on wait.
+     */
     public void send(Message message) throws InterruptedException{
         messages.addMessage(message);
     }
 
+    /**
+     * Initialises daemons threads.
+     */
     private void init(){
         connectionEstablisher = new ConnectionEstablisher();
+        root = new SuperUser();
 
     }
 
+    /**
+     * Main dispatching loop.
+     */
     private void run (){
 
         MessagesDispatcher dispatcher = new MessagesDispatcher();
@@ -69,12 +113,19 @@ public class Server implements Receiver{
         }
     }
 
+
+    /**
+     * @brief Cleans up and closes threads.
+     * Invoked when server is to close.
+     */
     private void close(){
 
         connectionEstablisher.interrupt();
 
         try{
             connectionEstablisher.join();
+            root.join();
+
             for (Client client : clients_){
                 client.closeClient();
             }
@@ -90,6 +141,10 @@ public class Server implements Receiver{
     }
 
 
+    /**
+     * Class that is responsible for dispatching messages.
+     * Written as a visitor. Each method dispatches different type of message.
+     */
     public class MessagesDispatcher implements Dispatcher {
 
         public void dispatch(NewClientSignal signal){
@@ -113,7 +168,14 @@ public class Server implements Receiver{
         }
 
         public void dispatch(ClientThreadsFinishedSignal signal){
-            clients_.remove(signal.getSender());
+
+            for (Client client : clients_){
+                if (client.getClientID().equals(signal.getSender())){
+                    clients_.remove(client);
+                    break;
+                }
+            }
+
             try {
                 for (Client client : clients_) {
                     client.send(new RemoveClientSignal(name, client.getClientID(),signal.getSender()));
@@ -186,14 +248,18 @@ public class Server implements Receiver{
         }
     }
 
-
+    /**
+     * Server is a singleton
+     */
     public static final Server instance = new Server();
 
     private Server(){}
 
 
     public final String name = "__server__";
+
     private Vector<Client> clients_ = new Vector<>();
     private ConnectionEstablisher connectionEstablisher = null;
+    private SuperUser root = null;
     private MessagesQueue messages = new MessagesQueue();
 }

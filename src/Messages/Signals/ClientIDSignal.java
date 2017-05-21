@@ -5,7 +5,10 @@ import Messages.Message;
 import java.lang.String;
 
 /**
+ * Signal is being sent from client to the server to approve chosen ID.
  * Created by piotr on 20.05.2017.
+ * @version 1.0
+ * @author piotr
  */
 public class ClientIDSignal extends Message{
 

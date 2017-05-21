@@ -1,4 +1,4 @@
-package Server.Deamons;
+package Server.Daemons;
 
 import Messages.Signals.*;;
 import Server.Client.Client;
@@ -11,7 +11,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
+ *
+ * Daemon responsible for connecting new clients.
  * Created by piotr on 27.04.2017.
+ * Object wraps a thread.
+ *
  */
 public class ConnectionEstablisher implements Runnable{
 
@@ -21,6 +25,9 @@ public class ConnectionEstablisher implements Runnable{
     }
 
 
+    /**
+     * Main loop
+     */
     public void run(){
         try (
                 ServerSocket serverSocket = new ServerSocket(PORT_NR);
@@ -55,16 +62,28 @@ public class ConnectionEstablisher implements Runnable{
     }
 
 
-
-
+    /**
+     * Interrupts the wrapped thread.
+     */
     public void interrupt (){
         thread.interrupt();
     }
+
+    /**
+     * Waits for the thread to finish
+     * @throws InterruptedException thrown while thread is interrupted during wait.
+     */
     public void join() throws InterruptedException {
         thread.join();
     }
 
 
+    /**
+     * Connects a client and sets its ID.
+     * @param serverSocket
+     * @return returns a valid Client instance ready to be sent to the Server.
+     * @throws IOException thrown when socket is unexpectedly closed.
+     */
     private Client establishConnection(ServerSocket serverSocket) throws IOException{
 
         try
